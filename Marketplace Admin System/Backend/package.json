@@ -1,0 +1,43 @@
+{
+  "name": "marketplace-admin-backend",
+  "version": "1.0.0",
+  "description": "Marketplace Admin System POC - Backend API with FSM, Automation & Audit Logging",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [
+    "marketplace",
+    "admin",
+    "fsm",
+    "orders",
+    "automation"
+  ],
+  "author": "Mohamed Attar",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.7.0",
+    "@types/ws": "^8.18.1",
+    "cors": "^2.8.5",
+    "date-fns": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/node-cron": "^3.0.11",
+    "prisma": "^5.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.0"
+  }
+}

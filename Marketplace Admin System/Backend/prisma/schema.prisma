@@ -1,0 +1,70 @@
+// Marketplace Admin System - Database Schema
+// Requirements: Orders, AuditLog, Notifications with proper relationships
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ORDER MODEL - Core entity with FSM states
+// ============================================
+model Order {
+  id            String   @id @default(uuid())
+  orderNumber   String   @unique
+  customerName  String
+  customerEmail String
+  totalAmount   Float
+  status        String   @default("AWAITING_PAYMENT")
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relationships
+  auditLogs     AuditLog[]
+  
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// AUDIT LOG MODEL - Track all status changes
+// ============================================
+model AuditLog {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  oldStatus   String
+  newStatus   String
+  changedBy   String   // "SYSTEM" | "ADMIN" | "CUSTOMER"
+  reason      String?  // Optional reason for the change
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// ============================================
+// NOTIFICATION MODEL - Automation alerts
+// ============================================
+model Notification {
+  id          String   @id @default(uuid())
+  type        String   // PAYMENT_OVERDUE, SHIPMENT_DELAYED, STATUS_CHANGE, SYSTEM_ALERT
+  title       String
+  message     String
+  orderId     String?
+  isRead      Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
