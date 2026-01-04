@@ -1,5 +1,4 @@
 // Marketplace Admin System - Database Schema
-// Requirements: Orders, AuditLog, Notifications with proper relationships
 
 generator client {
   provider = "prisma-client-js"
@@ -68,3 +67,4 @@ model Notification {
   @@index([isRead])
   @@index([createdAt])
 }
+
