@@ -1,6 +1,6 @@
 # 🛒 Marketplace Admin System POC
 
-> ** Proof of Concept** demonstrating enterprise-grade order management with FSM, real-time notifications, and automated workflows.
+> Proof of Concept demonstrating enterprise-grade order management with FSM, real-time notifications, and automated workflows.
 
 ---
 
