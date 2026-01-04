@@ -1,6 +1,5 @@
 /**
- * Prisma Seed Script
- * Creates sample orders with various statuses for testing
+ * Prisma Seed Data
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -37,7 +36,7 @@ async function main() {
 
     console.log('🗑️ Cleared existing data');
 
-    // Create sample orders with different statuses and dates
+    //orders with different statuses and dates
     const ordersData = [
         // Recent orders - normal flow
         {
@@ -134,7 +133,7 @@ async function main() {
             data: orderData
         });
 
-        // Create initial audit log for each order
+        // initial audit log for each order
         await prisma.auditLog.create({
             data: {
                 orderId: order.id,
@@ -145,7 +144,7 @@ async function main() {
             }
         });
 
-        // Add some status transition history for completed/returned orders
+     
         if (order.status === OrderStatus.COMPLETED ||
             order.status === OrderStatus.RETURNED ||
             order.status === OrderStatus.DELIVERED) {
@@ -172,7 +171,7 @@ async function main() {
         console.log(`✅ Created order: ${order.orderNumber} - ${order.status}`);
     }
 
-    // Create some sample notifications
+    //some sample notifications
     const order6 = await prisma.order.findFirst({ where: { orderNumber: 'ORD-2026-006' } });
     const order7 = await prisma.order.findFirst({ where: { orderNumber: 'ORD-2026-007' } });
 
@@ -215,3 +214,4 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
