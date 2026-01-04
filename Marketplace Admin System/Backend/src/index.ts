@@ -11,8 +11,6 @@
  * - Analytics & Charts Data
  * - Email Templates
  * 
- * Author: Mohamed Attar
- * Version: 2.0.0
  */
 
 import express, { Request, Response, NextFunction } from 'express';
@@ -121,11 +119,11 @@ async function startServer() {
             console.log(`
 ╔════════════════════════════════════════════════════════════════════╗
 ║                                                                    ║
-║   🚀 MARKETPLACE ADMIN SYSTEM - BACKEND API v2.0                  ║
+║   🚀 MARKETPLACE ADMIN SYSTEM - BACKEND API v2.0                   ║
 ║                                                                    ║
-║   Server: http://localhost:${PORT}                                    ║
-║   WebSocket: ws://localhost:${PORT}/ws                                ║
-║   Environment: ${process.env.NODE_ENV || 'development'}                                         ║
+║   Server: http://localhost:${PORT}                                 ║
+║   WebSocket: ws://localhost:${PORT}/ws                             ║
+║   Environment: ${process.env.NODE_ENV || 'development'}            ║
 ║                                                                    ║
 ║   API Endpoints:                                                   ║
 ║   ├─ /api/orders          CRUD + Search + FSM                      ║
@@ -135,8 +133,8 @@ async function startServer() {
 ║   ├─ /api/email-templates Template Preview                         ║
 ║   └─ /api/health          Server status                            ║
 ║                                                                    ║
-║   ⏰ Cron Jobs: Active                                              ║
-║   🔌 WebSocket: Ready                                               ║
+║   ⏰ Cron Jobs: Active                                             ║
+║   🔌 WebSocket: Ready                                              ║
 ║                                                                    ║
 ╚════════════════════════════════════════════════════════════════════╝
       `);
@@ -160,3 +158,4 @@ process.on('SIGINT', async () => {
 
 // Start the server
 startServer();
+
