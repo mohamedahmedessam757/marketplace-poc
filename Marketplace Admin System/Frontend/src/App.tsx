@@ -1,6 +1,6 @@
 /**
  * ============================================
- * MARKETPLACE ADMIN SYSTEM - FRONTEND v2.0
+ * MARKETPLACE ADMIN SYSTEM - FRONTEND
  * ============================================
  * 
  * Professional Admin Dashboard with:
@@ -612,3 +612,4 @@ function App() {
 }
 
 export default App;
+
