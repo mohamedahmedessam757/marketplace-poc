@@ -328,7 +328,7 @@ flowchart LR
 | الثلاثة نجحوا | ✅ **تأكيد** - كل التغييرات محفوظة ذرياً |
 | السيرفر توقف في منتصف المعاملة | ❌ **إلغاء** - تلقائي من قاعدة البيانات |
 
-**الخلاصة**: مستحيل هيكلياً إن الطلب يتغير من غير ما يتسجل في الـ Audit Log بسبب استخدام المعاملات الذرية.
+**الخلاصة**: مستحيل هيكلياً إن الطلب يتغير من غير ما يتسجل في الـ Audit Log بسبب استخدام Atomic transactions.
 
 ---
 
@@ -427,7 +427,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
             });
         }
 
-        // المعاملة الذرية: تحديث الطلب + Audit Log + الإشعار
+        // Atomic transactions: تحديث الطلب + Audit Log + الإشعار
         const updatedOrder = await prisma.$transaction(async (tx) => {
             // 1️⃣ تحديث حالة الطلب
             const order = await tx.order.update({
@@ -456,7 +456,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
                 }
             });
 
-            // 4️⃣ البث عبر WebSocket
+            // 4️⃣ الظهور عبر WebSocket
             broadcastNotification({
                 id: notification.id,
                 type: notification.type,
@@ -471,7 +471,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
 
         console.log(`🔄 الطلب ${currentOrder.orderNumber}: ${oldStatus} → ${newStatus}`);
 
-        // رد النجاح
+        // تم تحديث حالة الطلب بنجاح
         res.json({
             success: true,
             message: 'تم تحديث حالة الطلب بنجاح',
@@ -563,11 +563,11 @@ curl http://localhost:3001/api/audit-logs/order/order-123
 
 ---
 
-## 📊 مخطط التدفق الكامل
+## 📊 Summary Diagram: Complete Flow
 
 ```mermaid
 flowchart TB
-    subgraph Actors["👥 الفاعلون"]
+    subgraph Actors["👥 Actors"]
         SYS[🤖 النظام/Cron]
         ADMIN[👤 الأدمن]
         CUST[🛒 العميل]
@@ -582,7 +582,7 @@ flowchart TB
         TRANSITIONS[(خريطة VALID_TRANSITIONS)]
     end
     
-    subgraph Transaction["🔐 المعاملة الذرية"]
+    subgraph Transaction["🔐 Atomic Transaction"]
         T1[1. تحديث الطلب]
         T2[2. إنشاء AuditLog]
         T3[3. إنشاء الإشعار]
@@ -652,6 +652,7 @@ flowchart TB
 
 **إعداد الوثيقة**: محمد عصام  
 **لـ**: نظام إدارة السوق POC
+
 
 
 
