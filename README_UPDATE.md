@@ -109,7 +109,7 @@ async function checkOverduePayments(): Promise<number> {
 }
 ```
 
-### Code Evidence: Admin Transition (API Endpoint)
+### Admin Transition (API Endpoint)
 
 ```typescript
 // File: Backend/src/routes/orders.ts - Lines 229-322
@@ -137,7 +137,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
 
 ## ⚙️ Question 3: Does Manual Transition Use the Same FSM?
 
-### Answer: ✅ Yes, All Transitions Pass Through the FSM
+### ✅ Yes, All Transitions Pass Through the FSM
 
 Both System and Admin transitions use the **exact same FSM validation logic**:
 
@@ -191,7 +191,6 @@ flowchart TD
 **Proposed Enhancement**: Add Admin Override capability for exceptional cases:
 
 ```typescript
-// PROPOSED: Enhanced FSM with Admin Override
 
 // Add new field to AuditLog schema:
 model AuditLog {
@@ -229,7 +228,7 @@ export function canTransition(
 
 ## 🔒 Question 4: Ensuring No State Change Without Audit Log
 
-### Answer: Atomic Transactions with `prisma.$transaction`
+###  Atomic Transactions with `prisma.$transaction`
 
 **The system uses database transactions to guarantee atomicity:**
 
@@ -617,6 +616,7 @@ flowchart TB
 ---
 
 **Document Prepared By**: Mohamed Essam  
-**For**: Technical Review - Marketplace Admin System POC
+**For**: Marketplace Admin System POC
+
 
 
