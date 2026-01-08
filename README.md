@@ -1,413 +1,1172 @@
-# 🛒 Marketplace Admin System POC
+# 🏪 Marketplace Admin System
 
-> Proof of Concept demonstrating enterprise-grade order management with FSM, real-time notifications, and automated workflows.
+<div align="center">
 
----
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-Proprietary-red.svg)
+![Status](https://img.shields.io/badge/status-In%20Development-yellow.svg)
 
-## 📋 Table of Contents
+**نظام إدارة متكامل للمتاجر والعملاء - Admin + Vendor Marketplace**
 
-1. [System Overview](#-system-overview)
-2. [Tech Stack](#️-tech-stack)
-3. [Installation Guide](#-installation-guide)
-4. [Project Structure](#-project-structure)
-5. [System Architecture](#-system-architecture)
-6. [Database Schema](#️-database-schema)
-7. [FSM Order Flow](#-fsm-order-flow)
-8. [API Endpoints](#-api-endpoints)
-9. [New Features](#-new-features-v20)
-10. [Author](#-author)
+</div>
 
 ---
 
-## 🎯 System Overview
+## 📋 جدول المحتويات
 
-This POC demonstrates a complete **Marketplace Admin System** with:
-
-| Feature | Description |
-|---------|-------------|
-| **FSM Order Management** | 8 states with controlled transitions |
-| **Cron Jobs** | Automated payment & shipping alerts |
-| **WebSocket** | Real-time notifications |
-| **Audit Log** | Full traceability (who, when, what) |
-| **Charts & Analytics** | Sales trends & order distribution |
-
----
-
-## 🛠️ Tech Stack
-
-```mermaid
-flowchart TB
-    subgraph Frontend["🖥️ Frontend"]
-        React["React 18"]
-        Vite["Vite"]
-        TS1["TypeScript"]
-        Lucide["Lucide Icons"]
-        CSS["Custom CSS"]
-    end
-    
-    subgraph Backend["⚙️ Backend"]
-        Express["Express.js"]
-        TS2["TypeScript"]
-        Prisma["Prisma ORM"]
-        WS["WebSocket (ws)"]
-        Cron["Node-Cron"]
-    end
-    
-    subgraph Database["🗄️ Database"]
-        SQLite["SQLite"]
-    end
-    
-    Frontend <-->|REST API| Backend
-    Frontend <-->|WebSocket| Backend
-    Backend <-->|Prisma| Database
-```
-
-### Libraries & Dependencies
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| **Backend** |||
-| express | ^4.18.2 | HTTP Server |
-| prisma | ^5.7.0 | Database ORM |
-| ws | ^8.14.2 | WebSocket |
-| node-cron | ^3.0.3 | Scheduled Jobs |
-| date-fns | ^2.30.0 | Date Utilities |
-| cors | ^2.8.5 | CORS Middleware |
-| **Frontend** |||
-| react | ^18.2.0 | UI Library |
-| vite | ^5.0.0 | Build Tool |
-| lucide-react | ^0.294.0 | SVG Icons |
-| typescript | ^5.3.0 | Type Safety |
+- [نظرة عامة](#-نظرة-عامة)
+- [الأهداف الرئيسية](#-الأهداف-الرئيسية)
+- [المتطلبات التقنية الحرجة](#-المتطلبات-التقنية-الحرجة)
+- [البنية المعمارية](#-البنية-المعمارية)
+- [الوحدات والميزات](#-الوحدات-والميزات)
+- [Technology Stack](#-technology-stack)
+- [نظام حالات الطلب (FSM)](#-نظام-حالات-الطلب-fsm)
+- [الأتمتة والجداول الزمنية](#-الأتمتة-والجداول-الزمنية)
+- [التكاملات](#-التكاملات)
+- [الأمان والحماية](#-الأمان-والحماية)
+- [مراحل التنفيذ](#-مراحل-التنفيذ)
+- [هيكل المشروع](#-هيكل-المشروع)
+- [قاعدة البيانات](#-قاعدة-البيانات)
+- [API Documentation](#-api-documentation)
+- [التشغيل والنشر](#-التشغيل-والنشر)
 
 ---
 
-## 📦 Installation Guide
+## 🎯 نظرة عامة
 
-### Prerequisites
-- Node.js v18+
-- npm v9+
+هذا المشروع هو **نظام إدارة متكامل لمنصة Marketplace** يهدف إلى إدارة كل جوانب العمليات التجارية بين المتاجر (Vendors) والعملاء (Customers) تحت إشراف الإدارة (Admin).
 
-### Step 1: Clone Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/marketplace-admin-system.git
-cd marketplace-admin-system
-```
-
-### Step 2: Backend Setup
-```bash
-cd Backend
-npm install
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-npm run dev
-```
-
-### Step 3: Frontend Setup (New Terminal)
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-
-### 🔗 Access URLs
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:5173 |
-| Backend API | http://localhost:3001 |
-| WebSocket | ws://localhost:3001/ws |
-
----
-
-## 📁 Project Structure
+### ما الذي يميز هذا النظام؟
 
 ```
-📦 Marketplace Admin System/
-├── 📂 Backend/
-│   ├── 📂 prisma/
-│   │   ├── schema.prisma      # Database Schema
-│   │   └── seed.ts            # Sample Data
-│   ├── 📂 src/
-│   │   ├── 📂 constants/
-│   │   │   └── orderStatus.ts # FSM States & Transitions
-│   │   ├── 📂 utils/
-│   │   │   └── orderUtils.ts  # Helper Functions
-│   │   ├── 📂 services/
-│   │   │   ├── websocket.ts   # Real-time Service
-│   │   │   └── cron.ts        # Automation Jobs
-│   │   ├── 📂 routes/
-│   │   │   ├── orders.ts      # CRUD + FSM
-│   │   │   ├── notifications.ts
-│   │   │   ├── analytics.ts   # Charts Data
-│   │   │   ├── auditLogs.ts   # Timeline + Export
-│   │   │   └── emailTemplates.ts
-│   │   └── index.ts           # Server Entry
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── 📂 Frontend/
-│   ├── 📂 src/
-│   │   ├── 📂 components/
-│   │   │   ├── 📂 charts/
-│   │   │   │   ├── SalesChart.tsx
-│   │   │   │   └── PieChart.tsx
-│   │   │   ├── OrderTimeline.tsx
-│   │   │   ├── SearchFilters.tsx
-│   │   │   ├── EmailTemplates.tsx
-│   │   │   └── index.ts
-│   │   ├── 📂 services/
-│   │   │   ├── api.ts         # API Client
-│   │   │   └── websocket.ts   # WS Client
-│   │   ├── App.tsx            # Main Component
-│   │   ├── App.css
-│   │   └── index.css          # Design System
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── .gitignore
-└── README.md
+┌─────────────────────────────────────────────────────────────────┐
+│                    Marketplace Admin System                      │
+├─────────────────────────────────────────────────────────────────┤
+│  ✓ FSM-Based Order Management (حتمي وموثق)                       │
+│  ✓ Audit Logs لكل عملية (شفافية كاملة)                           │
+│  ✓ Automated SLA Enforcement (تصعيد تلقائي)                      │
+│  ✓ Stripe Integration (دفع آمن 100%)                            │
+│  ✓ Real-time Notifications (WhatsApp + Email)                   │
+│  ✓ Guard Protection (لا يمكن التلاعب بالحالات)                   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 الأهداف الرئيسية
 
-```mermaid
-flowchart TB
-    subgraph Client["🌐 Client Browser"]
-        UI["React Dashboard"]
-        WSClient["WebSocket Client"]
-    end
-    
-    subgraph Server["🖥️ Node.js Server"]
-        Express["Express Router"]
-        WSServer["WebSocket Server"]
-        CronService["Cron Service"]
-        
-        subgraph Routes["API Routes"]
-            OrdersAPI["Orders API"]
-            AnalyticsAPI["Analytics API"]
-            NotifAPI["Notifications API"]
-            AuditAPI["Audit Logs API"]
-        end
-        
-        subgraph Core["Core Logic"]
-            FSM["FSM Engine"]
-            AuditService["Audit Logger"]
-        end
-    end
-    
-    subgraph DB["🗄️ SQLite Database"]
-        Orders[(Orders)]
-        AuditLogs[(Audit Logs)]
-        Notifications[(Notifications)]
-    end
-    
-    UI -->|HTTP REST| Express
-    WSClient <-->|WebSocket| WSServer
-    Express --> Routes
-    Routes --> Core
-    Core --> Prisma["Prisma ORM"]
-    Prisma --> DB
-    CronService -->|Check Overdue| Prisma
-    CronService -->|Broadcast| WSServer
-    WSServer -->|Push| WSClient
+| الهدف | الوصف |
+|-------|-------|
+| **الحوكمة** | نظام مبني على قواعد صارمة لا يمكن تجاوزها |
+| **الشفافية** | كل إجراء مسجل ومؤرخ مع ذكر المنفذ والسبب |
+| **الأتمتة** | قواعد زمنية تعمل تلقائياً دون تدخل بشري |
+| **الأمان** | حماية كاملة ضد جميع أنواع الهجمات |
+| **القابلية للتوسع** | تصميم معماري يسمح بالنمو المستقبلي |
+
+---
+
+## ⚠️ المتطلبات التقنية الحرجة
+
+> [!CAUTION]
+> هذه المتطلبات **إلزامية** وأي إخلال بها يُعد خللاً جوهرياً في التنفيذ
+
+### 1️⃣ Finite State Machine (FSM) - إلزامي
+```
+❌ ممنوع: تغيير order.status مباشرة من Controller
+❌ ممنوع: تغيير order.status مباشرة من Database Query
+❌ ممنوع: تغيير order.status عبر Script خارج FSM
+
+✅ مطلوب: جميع تغييرات الحالة تمر عبر Service مركزية واحدة
+```
+
+### 2️⃣ Audit Logs - إلزامي
+كل تغيير حالة يُسجل في جدول مستقل يحتوي على:
+- `order_id` - معرف الطلب
+- `previous_state` - الحالة السابقة
+- `new_state` - الحالة الجديدة
+- `actor_type` - نوع المنفذ (System / Admin / Customer / Vendor)
+- `actor_id` - معرف المنفذ
+- `reason` - سبب التغيير
+- `timestamp` - وقت التغيير
+
+### 3️⃣ Guard & Enforcement - إلزامي
+```typescript
+// يجب أن يكون هناك Guard معماري حقيقي بحيث:
+// 1. يستحيل تقنياً تغيير حالة الطلب خارج FSM
+// 2. أي محاولة تجاوز تفشل Runtime أو تُسقط Test
+// 3. وجود FSM بدون Enforcement غير مقبول
 ```
 
 ---
 
-## 🗃️ Database Schema
+## 🏗️ البنية المعمارية
 
-```mermaid
-erDiagram
-    ORDER {
-        string id PK "UUID"
-        string orderNumber UK "ORD-XXXXXXXX"
-        string customerName
-        string customerEmail
-        float totalAmount
-        string status "FSM State"
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    AUDIT_LOG {
-        string id PK "UUID"
-        string orderId FK
-        string oldStatus
-        string newStatus
-        string changedBy "SYSTEM|ADMIN|CUSTOMER"
-        string reason
-        datetime createdAt
-    }
-    
-    NOTIFICATION {
-        string id PK "UUID"
-        string type "PAYMENT_OVERDUE|SHIPMENT_DELAYED|..."
-        string title
-        string message
-        string orderId FK "nullable"
-        boolean isRead
-        datetime createdAt
-    }
-    
-    ORDER ||--o{ AUDIT_LOG : "has many"
-    ORDER ||--o{ NOTIFICATION : "triggers"
 ```
-
-### Table Details
-
-| Table | Purpose | Key Fields |
-|-------|---------|------------|
-| **Order** | Core entity | `status` (FSM state), `orderNumber` |
-| **AuditLog** | Tracks all changes | `oldStatus`, `newStatus`, `changedBy` |
-| **Notification** | System alerts | `type`, `isRead` |
+┌────────────────────────────────────────────────────────────────────────┐
+│                           Frontend Layer                                │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐            │
+│  │  Admin Panel   │  │ Vendor Portal  │  │ Customer App   │            │
+│  └───────┬────────┘  └───────┬────────┘  └───────┬────────┘            │
+└──────────┼───────────────────┼───────────────────┼─────────────────────┘
+           │                   │                   │
+           ▼                   ▼                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                            API Gateway                                  │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │  Authentication │ Authorization │ Rate Limiting │ Validation     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                         Application Layer                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │   Orders     │  │   Stores     │  │  Customers   │                  │
+│  │   Module     │  │   Module     │  │   Module     │                  │
+│  └──────┬───────┘  └──────────────┘  └──────────────┘                  │
+│         │                                                               │
+│  ┌──────▼───────────────────────────────────────────────────────────┐  │
+│  │              Order State Machine (FSM Service)                    │  │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐     │  │
+│  │  │ Guards  │ │Transitions│ │ Actions │ │ Events  │ │  Logs   │    │  │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │   Billing    │  │   Disputes   │  │   Shipping   │                  │
+│  │   Module     │  │   Module     │  │   Module     │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└────────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                         Background Services                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │  Cron Jobs   │  │    Queues    │  │ Notifications│                  │
+│  │  (Scheduled) │  │  (BullMQ)    │  │  (Real-time) │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└────────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                          Data Layer                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │  PostgreSQL  │  │    Redis     │  │  File Store  │                  │
+│  │  (Primary)   │  │   (Cache)    │  │  (Documents) │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└────────────────────────────────────────────────────────────────────────┘
+           │
+           ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      External Integrations                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │    Stripe    │  │   WhatsApp   │  │    Email     │                  │
+│  │  (Payments)  │  │   (Notifs)   │  │   (Notifs)   │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🔄 FSM Order Flow
+## 📦 الوحدات والميزات
+
+### 1. 📊 لوحة الإدارة (Dashboard)
+
+#### مؤشرات الأداء الرئيسية (KPIs)
+| المؤشر | الوصف |
+|--------|--------|
+| عدد العملاء | إجمالي العملاء المسجلين |
+| عدد المتاجر | إجمالي المتاجر النشطة |
+| عدد الطلبات | اليوم / الأسبوع / الشهر |
+| إجمالي المبيعات | قيمة المبيعات المكتملة |
+| إجمالي العمولة | نصيب المنصة من المبيعات |
+
+#### حالات الطلبات
+```
+جديد → بانتظار الدفع → قيد التجهيز → شحن → مكتمل
+                    ↓           ↓        ↓
+                  ملغي      إرجاع     نزاع
+```
+
+#### التنبيهات الفورية
+- ⚠️ متاجر لم ترد > 24 ساعة
+- ⚠️ تأخر التجهيز > 48 ساعة
+- ⚠️ تأخر رفع بوليصة الشحن
+- ⚠️ شحنة متأخرة > 14 يوم
+- ⚠️ انتهاء ترخيص متجر
+- ⚠️ تقييم متجر منخفض
+- ⚠️ طلب غير مدفوع
+
+---
+
+### 2. 🏬 نظام المتاجر (Stores Module)
+
+#### ملف المتجر
+```
+┌─────────────────────────────────────────────────┐
+│                 Store Profile                    │
+├─────────────────────────────────────────────────┤
+│ 📋 البيانات الأساسية (الاسم، الوصف، الفئة)      │
+│ 📄 الترخيص والمستندات                           │
+│ 💳 وسائل الدفع + IBAN                           │
+│ 👤 بيانات مسؤول المتجر                          │
+│ 💰 الرصيد المالي                                │
+│ ⚠️ سجل الانتهاكات                               │
+└─────────────────────────────────────────────────┘
+```
+
+#### مؤشرات أداء المتجر (Store KPIs)
+| المؤشر | الحد المقبول |
+|--------|---------------|
+| سرعة الرد | < 24 ساعة |
+| سرعة التجهيز | < 48 ساعة |
+| رفع البوليصة | < 24 ساعة بعد التجهيز |
+| نسبة الشكاوى | < 5% |
+| تقييم العملاء | >= 4.0/5 |
+
+#### إجراءات الإدارة
+- ✅ تفعيل / تعليق / إيقاف
+- 🔒 Soft Block (إخفاء مؤقت)
+- 💰 تعديل الرصيد
+- 💬 مراجعة المحادثات
+- ⚠️ إرسال تحذير
+
+---
+
+### 3. 👥 نظام العملاء (Customers Module)
+
+#### ملف العميل
+- البيانات الشخصية
+- الأجهزة ومحاولات الدخول
+- سجل الطلبات والمدفوعات
+- الشكاوى المرفوعة
+- طلبات الإرجاع
+
+#### إدارة التقييمات
+- تقييمات معلّقة للمراجعة
+- قبول / رفض التقييم
+- حذف تقييم مسيء
+
+---
+
+### 4. 📦 نظام الطلبات (Orders Module)
+
+#### حالات الطلب الكاملة
 
 ```mermaid
 stateDiagram-v2
-    [*] --> AWAITING_PAYMENT: Order Created
+    [*] --> AwaitingOffers : إنشاء طلب جديد
     
-    AWAITING_PAYMENT --> PREPARATION: Payment Received
-    AWAITING_PAYMENT --> CANCELLED: Cancel Order
+    AwaitingOffers --> AwaitingPayment : قبول عرض
+    AwaitingOffers --> Cancelled : انتهاء مهلة العروض
     
-    PREPARATION --> SHIPPED: Ship Order
-    PREPARATION --> CANCELLED: Cancel Order
-    PREPARATION --> RETURNED: Return Request
+    AwaitingPayment --> Preparation : نجاح الدفع (Stripe Webhook)
+    AwaitingPayment --> Cancelled : انتهاء مهلة الدفع
     
-    SHIPPED --> DELIVERED: Mark Delivered
-    SHIPPED --> RETURNED: Return Request
-    SHIPPED --> DISPUTED: Open Dispute
+    Preparation --> Shipped : رفع بوليصة الشحن
+    Preparation --> Cancelled : إلغاء من الإدارة
     
-    DELIVERED --> COMPLETED: Confirm Completion
-    DELIVERED --> RETURNED: Return Request
-    DELIVERED --> DISPUTED: Open Dispute
+    Shipped --> Delivered : تأكيد التسليم
+    Shipped --> Returned : فتح طلب إرجاع
+    Shipped --> Disputed : فتح نزاع
     
-    COMPLETED --> [*]
-    RETURNED --> [*]
-    DISPUTED --> [*]
-    CANCELLED --> [*]
+    Delivered --> Completed : بعد فترة الضمان
+    Delivered --> Returned : طلب إرجاع
+    Delivered --> Disputed : فتح نزاع
+    
+    Returned --> Completed : معالجة الإرجاع
+    Disputed --> Completed : حل النزاع
+    
+    Completed --> [*]
+    Cancelled --> [*]
 ```
 
-### State Transitions Table
+#### القواعد الزمنية لكل مرحلة
 
-| From | Allowed Transitions |
-|------|---------------------|
-| `AWAITING_PAYMENT` | PREPARATION, CANCELLED |
-| `PREPARATION` | SHIPPED, CANCELLED, RETURNED |
-| `SHIPPED` | DELIVERED, RETURNED, DISPUTED |
-| `DELIVERED` | COMPLETED, RETURNED, DISPUTED |
-| `COMPLETED` | *(End State)* |
-| `RETURNED` | *(End State)* |
-| `DISPUTED` | *(End State)* |
-| `CANCELLED` | *(End State)* |
+| المرحلة | المدة المسموحة | الإجراء عند التجاوز |
+|---------|----------------|---------------------|
+| العروض | 24 ساعة | إلغاء تلقائي |
+| الدفع | 24 ساعة | إلغاء تلقائي |
+| التجميع | 48 ساعة | تنبيه للإدارة |
+| التجهيز | 48 ساعة | تنبيه + تحذير للمتجر |
+| رفع البوليصة | 24 ساعة | تنبيه + غرامة محتملة |
+| الشحن | 14 يوم | فتح متابعة تلقائية |
+| استلام العميل | 7 أيام | تصعيد للإدارة |
 
 ---
 
-## 📡 API Endpoints
+### 5. 🚚 الشحن والإرجاع (Shipping & Returns)
 
-### Orders API
+#### تتبع الشحنات
+- رقم البوليصة
+- شركة الشحن
+- حالة الشحنة
+- تاريخ التوصيل المتوقع
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/orders` | List all orders with audit logs |
-| `GET` | `/api/orders/:id` | Get single order with timeline |
-| `GET` | `/api/orders/search` | Advanced search with filters |
-| `POST` | `/api/orders` | Create new order |
-| `PATCH` | `/api/orders/:id/status` | **FSM-validated** status change |
+#### إدارة الإرجاع
+```
+فتح طلب إرجاع (خلال 48 ساعة)
+        ↓
+نقاش بين العميل والمتجر (3 أيام)
+        ↓
+إصدار بوليصة إرجاع
+        ↓
+تسليم العميل (خلال 24 ساعة)
+        ↓
+استلام المتجر وإتمام الإرجاع
+```
 
-#### Status Change Request
-```json
+---
+
+### 6. ⚖️ نظام النزاعات (Disputes)
+
+#### دورة حياة النزاع
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Dispute Lifecycle                             │
+├─────────────────────────────────────────────────────────────────┤
+│  1. فتح النزاع (بواسطة العميل)                                  │
+│     ↓                                                            │
+│  2. رفع الأدلة (العميل)                                         │
+│     ↓                                                            │
+│  3. رد المتجر (3 أيام كحد أقصى)                                 │
+│     ↓                                                            │
+│  4. تصعيد تلقائي (في حال عدم الرد)                              │
+│     ↓                                                            │
+│  5. مراجعة الإدارة                                               │
+│     ↓                                                            │
+│  6. حكم الإدارة                                                  │
+│     ↓                                                            │
+│  7. القرار النهائي (رد المبلغ أو تحويله للمتجر)                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> [!IMPORTANT]
+> يتم قفل رصيد الطلب مالياً فور فتح النزاع حتى صدور القرار النهائي
+
+---
+
+### 7. 💰 النظام المالي (Billing & Finance)
+
+#### أنواع الفواتير
+| النوع | الوصف |
+|-------|-------|
+| فاتورة منتج | قيمة المنتجات |
+| فاتورة عمولة | نسبة المنصة |
+| فاتورة شحن | تكلفة الشحن |
+| فاتورة شاملة | جميع المكونات |
+
+#### خصائص الفاتورة
+- رقم تسلسلي فريد
+- QR Code للتحقق
+- Barcode للمسح
+- حالة الدفع
+- ربط بالطلب والبوليصة
+
+---
+
+### 8. ⚙️ الإعدادات والأتمتة (Settings & Automation)
+
+#### إعدادات قابلة للتخصيص
+- مدد التشغيل (القواعد الزمنية)
+- الصلاحيات والأدوار (Roles)
+- نسبة عمولة النظام
+- أسعار الشحن
+- الصفحات (الشروط - من نحن)
+- الفئات والماركات
+- تصميم الفاتورة والبوليصة
+- العقد الإلكتروني
+
+#### قواعد الأتمتة
+```javascript
+// أمثلة على الأتمتة
 {
-  "newStatus": "PREPARATION",
-  "changedBy": "ADMIN",
-  "reason": "Payment confirmed"
+  "auto_cancel_unpaid": {
+    "condition": "order.status === 'AWAITING_PAYMENT' && elapsed > 24h",
+    "action": "cancel_order",
+    "notification": ["customer", "store"]
+  },
+  "escalate_dispute": {
+    "condition": "dispute.status === 'AWAITING_STORE' && elapsed > 3days",
+    "action": "escalate_to_admin",
+    "notification": ["admin"]
+  },
+  "license_expiry_warning": {
+    "condition": "store.license_expiry <= today + 30days",
+    "action": "send_warning",
+    "notification": ["store", "admin"]
+  }
 }
 ```
 
-#### Status Change Response
-```json
-{
-  "success": true,
-  "message": "Order status updated successfully",
-  "data": {
-    "order": { "id": "...", "status": "PREPARATION" },
-    "transition": {
-      "from": { "status": "AWAITING_PAYMENT", "label": "⏳ Awaiting Payment" },
-      "to": { "status": "PREPARATION", "label": "📦 Preparation" },
-      "changedBy": "ADMIN",
-      "timestamp": "2026-01-03T19:00:00.000Z"
+---
+
+### 9. 🎧 الدعم الفني (Support Module)
+
+- تذاكر الدعم
+- سجل الأعطال
+- التنبيهات
+- إغلاق التذاكر
+- تقييم الخدمة
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+```
+┌─────────────────────────────────────────────┐
+│  Framework:    NestJS (Node.js)             │
+│  Language:     TypeScript                    │
+│  Database:     PostgreSQL                    │
+│  ORM:          Prisma                        │
+│  Cache:        Redis                         │
+│  Queue:        BullMQ                        │
+│  Auth:         JWT + Passport                │
+└─────────────────────────────────────────────┘
+```
+
+### Frontend
+```
+┌─────────────────────────────────────────────┐
+│  Framework:    React / Next.js              │
+│  Language:     TypeScript                    │
+│  State:        Zustand / React Query        │
+│  UI:           Tailwind CSS                  │
+│  Charts:       Recharts                      │
+│  Forms:        React Hook Form + Zod        │
+└─────────────────────────────────────────────┘
+```
+
+### DevOps & Tools
+```
+┌─────────────────────────────────────────────┐
+│  Version Control:  Git                       │
+│  CI/CD:           GitHub Actions            │
+│  Containerization: Docker                   │
+│  Documentation:    Swagger/OpenAPI          │
+│  Testing:          Jest + Supertest         │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 نظام حالات الطلب (FSM)
+
+### تعريف الحالات
+
+```typescript
+enum OrderStatus {
+  AWAITING_OFFERS = 'awaiting_offers',      // بانتظار عروض المتاجر
+  AWAITING_PAYMENT = 'awaiting_payment',    // بانتظار الدفع
+  PREPARATION = 'preparation',               // قيد التجهيز
+  SHIPPED = 'shipped',                       // تم الشحن
+  DELIVERED = 'delivered',                   // تم التوصيل
+  COMPLETED = 'completed',                   // مكتمل
+  CANCELLED = 'cancelled',                   // ملغي
+  RETURNED = 'returned',                     // مرتجع
+  DISPUTED = 'disputed'                      // نزاع
+}
+```
+
+### خريطة الانتقالات المسموحة
+
+```typescript
+const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+  [OrderStatus.AWAITING_OFFERS]: [
+    OrderStatus.AWAITING_PAYMENT,
+    OrderStatus.CANCELLED
+  ],
+  [OrderStatus.AWAITING_PAYMENT]: [
+    OrderStatus.PREPARATION,
+    OrderStatus.CANCELLED
+  ],
+  [OrderStatus.PREPARATION]: [
+    OrderStatus.SHIPPED,
+    OrderStatus.CANCELLED
+  ],
+  [OrderStatus.SHIPPED]: [
+    OrderStatus.DELIVERED,
+    OrderStatus.RETURNED,
+    OrderStatus.DISPUTED
+  ],
+  [OrderStatus.DELIVERED]: [
+    OrderStatus.COMPLETED,
+    OrderStatus.RETURNED,
+    OrderStatus.DISPUTED
+  ],
+  [OrderStatus.RETURNED]: [
+    OrderStatus.COMPLETED
+  ],
+  [OrderStatus.DISPUTED]: [
+    OrderStatus.COMPLETED,
+    OrderStatus.RETURNED
+  ],
+  [OrderStatus.COMPLETED]: [],  // الحالة النهائية
+  [OrderStatus.CANCELLED]: []   // الحالة النهائية
+};
+```
+
+### FSM Service Implementation
+
+```typescript
+@Injectable()
+export class OrderStateMachine {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
+
+  async transitionTo(
+    orderId: string,
+    newStatus: OrderStatus,
+    actor: Actor,
+    reason: string,
+  ): Promise<Order> {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. جلب الطلب الحالي مع قفل
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { status: true },
+      });
+
+      if (!order) {
+        throw new NotFoundException('Order not found');
+      }
+
+      // 2. التحقق من صحة الانتقال
+      const currentStatus = order.status as OrderStatus;
+      if (!this.isValidTransition(currentStatus, newStatus)) {
+        throw new ForbiddenException(
+          `Invalid transition from ${currentStatus} to ${newStatus}`
+        );
+      }
+
+      // 3. تنفيذ الانتقال
+      const updatedOrder = await tx.order.update({
+        where: { id: orderId },
+        data: { 
+          status: newStatus,
+          updatedAt: new Date(),
+        },
+      });
+
+      // 4. تسجيل في Audit Log
+      await tx.auditLog.create({
+        data: {
+          orderId,
+          previousState: currentStatus,
+          newState: newStatus,
+          actorType: actor.type,
+          actorId: actor.id,
+          reason,
+          timestamp: new Date(),
+        },
+      });
+
+      return updatedOrder;
+    });
+  }
+
+  private isValidTransition(from: OrderStatus, to: OrderStatus): boolean {
+    return validTransitions[from]?.includes(to) ?? false;
+  }
+}
+```
+
+### Guard Implementation
+
+```typescript
+// منع أي تغيير مباشر لـ order.status خارج FSM
+@Injectable()
+export class OrderStatusGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    
+    // التأكد من أن أي تعديل للـ status يمر عبر FSM
+    if (request.body?.status) {
+      throw new ForbiddenException(
+        'Direct status modification is not allowed. Use FSM service.'
+      );
+    }
+    
+    return true;
+  }
+}
+```
+
+---
+
+## ⏰ الأتمتة والجداول الزمنية
+
+### Cron Jobs
+
+```typescript
+@Injectable()
+export class AutomationService {
+  constructor(
+    private readonly orderMachine: OrderStateMachine,
+    private readonly notificationService: NotificationService,
+  ) {}
+
+  // يعمل كل ساعة
+  @Cron('0 * * * *')
+  async cancelUnpaidOrders() {
+    const expiredOrders = await this.prisma.order.findMany({
+      where: {
+        status: OrderStatus.AWAITING_PAYMENT,
+        createdAt: {
+          lt: subHours(new Date(), 24),
+        },
+      },
+    });
+
+    for (const order of expiredOrders) {
+      await this.orderMachine.transitionTo(
+        order.id,
+        OrderStatus.CANCELLED,
+        { type: 'SYSTEM', id: 'auto-cancel-job' },
+        'Payment timeout exceeded 24 hours'
+      );
+    }
+  }
+
+  // يعمل كل 30 دقيقة
+  @Cron('*/30 * * * *')
+  async alertDelayedPreparation() {
+    const delayedOrders = await this.prisma.order.findMany({
+      where: {
+        status: OrderStatus.PREPARATION,
+        updatedAt: {
+          lt: subHours(new Date(), 48),
+        },
+      },
+    });
+
+    for (const order of delayedOrders) {
+      await this.notificationService.sendAlert({
+        type: 'DELAYED_PREPARATION',
+        orderId: order.id,
+        recipients: ['admin', 'store'],
+      });
+    }
+  }
+
+  // يعمل يومياً
+  @Cron('0 0 * * *')
+  async escalateUnrespondedDisputes() {
+    const unresponded = await this.prisma.dispute.findMany({
+      where: {
+        status: 'AWAITING_STORE_RESPONSE',
+        createdAt: {
+          lt: subDays(new Date(), 3),
+        },
+      },
+    });
+
+    for (const dispute of unresponded) {
+      await this.orderMachine.transitionTo(
+        dispute.orderId,
+        OrderStatus.DISPUTED,
+        { type: 'SYSTEM', id: 'dispute-escalation-job' },
+        'Store did not respond within 3 days - Auto escalated'
+      );
     }
   }
 }
 ```
 
-### Analytics API
+---
+
+## 🔌 التكاملات
+
+### Stripe Integration
+
+```typescript
+@Injectable()
+export class StripeWebhookHandler {
+  constructor(
+    private readonly orderMachine: OrderStateMachine,
+    private readonly stripe: Stripe,
+  ) {}
+
+  async handleWebhook(payload: Buffer, signature: string) {
+    // 1. التحقق من Signature
+    const event = this.stripe.webhooks.constructEvent(
+      payload,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+
+    // 2. معالجة الحدث
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        await this.handlePaymentSuccess(event.data.object);
+        break;
+      case 'payment_intent.payment_failed':
+        await this.handlePaymentFailure(event.data.object);
+        break;
+      // ... المزيد من الأحداث
+    }
+  }
+
+  private async handlePaymentSuccess(paymentIntent: any) {
+    const orderId = paymentIntent.metadata.orderId;
+    
+    await this.orderMachine.transitionTo(
+      orderId,
+      OrderStatus.PREPARATION,
+      { type: 'SYSTEM', id: 'stripe-webhook' },
+      `Payment confirmed via Stripe: ${paymentIntent.id}`
+    );
+  }
+}
+```
+
+> [!WARNING]
+> **لا يتم اعتماد أي حالة مالية إلا عبر Webhook موثوق مع Verification Signature**
+> **منع التلاعب بالحالات المالية يدوياً**
+
+### WhatsApp & Email Notifications
+
+```typescript
+@Injectable()
+export class NotificationService {
+  async sendWhatsApp(phone: string, template: string, data: any) {
+    // Implementation using WhatsApp Business API
+  }
+
+  async sendEmail(email: string, template: string, data: any) {
+    // Implementation using SendGrid or similar
+  }
+
+  async sendAlert(alert: Alert) {
+    const recipients = await this.getRecipients(alert.recipients);
+    
+    for (const recipient of recipients) {
+      if (recipient.whatsapp) {
+        await this.sendWhatsApp(recipient.phone, alert.type, alert);
+      }
+      if (recipient.email) {
+        await this.sendEmail(recipient.email, alert.type, alert);
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🔒 الأمان والحماية
+
+### متطلبات الأمان الإلزامية
+
+| المتطلب | التنفيذ |
+|---------|---------|
+| Authentication | JWT + Refresh Tokens |
+| Authorization | Role-Based Access Control (RBAC) |
+| Rate Limiting | Express Rate Limit + Redis |
+| Input Validation | Zod + Class Validator |
+| SQL Injection | Prisma Parameterized Queries |
+| XSS Protection | Helmet + HTML Sanitization |
+| CSRF Protection | CSRF Tokens + SameSite Cookies |
+| Data Encryption | bcrypt (passwords) + AES (sensitive data) |
+
+### Security Middleware Stack
+
+```typescript
+// app.module.ts
+@Module({
+  imports: [
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 100,
+    }),
+    // ...
+  ],
+})
+export class AppModule {}
+
+// main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // Security headers
+  app.use(helmet());
+  
+  // CORS
+  app.enableCors({
+    origin: process.env.ALLOWED_ORIGINS.split(','),
+    credentials: true,
+  });
+  
+  // Validation
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }));
+  
+  await app.listen(3000);
+}
+```
+
+---
+
+## 📅 مراحل التنفيذ
+
+### Milestone 1: Core Architecture + FSM (25%)
+**المدة: 2-3 أسابيع**
+
+- [ ] إعداد بيئة التطوير
+- [ ] تصميم قاعدة البيانات
+- [ ] بناء نظام Authentication
+- [ ] تنفيذ Order State Machine
+- [ ] بناء Guard & Enforcement
+- [ ] إنشاء جداول Audit Logs
+
+### Milestone 2: Automation + Audit Logs (25%)
+**المدة: 2-3 أسابيع**
+
+- [ ] بناء نظام Cron Jobs
+- [ ] إعداد Redis + BullMQ
+- [ ] تنفيذ قواعد SLA
+- [ ] نظام التنبيهات
+- [ ] التصعيد التلقائي
+- [ ] اختبار Audit Logs
+
+### Milestone 3: APIs + Stripe + Security (25%)
+**المدة: 2-3 أسابيع**
+
+- [ ] بناء REST APIs
+- [ ] تكامل Stripe Webhooks
+- [ ] إعداد WhatsApp
+- [ ] إعداد Email
+- [ ] تطبيق Security Layer
+- [ ] Rate Limiting
+
+### Milestone 4: Testing + Documentation + Delivery (25%)
+**المدة: 2-3 أسابيع**
+
+- [ ] Unit Tests
+- [ ] Integration Tests
+- [ ] E2E Tests
+- [ ] API Documentation
+- [ ] System Documentation
+- [ ] Deployment
+
+---
+
+## 📁 هيكل المشروع
+
+```
+marketplace-admin-system/
+├── 📂 backend/
+│   ├── 📂 src/
+│   │   ├── 📂 modules/
+│   │   │   ├── 📂 auth/
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── strategies/
+│   │   │   │   └── guards/
+│   │   │   ├── 📂 orders/
+│   │   │   │   ├── orders.controller.ts
+│   │   │   │   ├── orders.service.ts
+│   │   │   │   ├── orders.module.ts
+│   │   │   │   ├── fsm/
+│   │   │   │   │   ├── order-state-machine.ts
+│   │   │   │   │   ├── transitions.ts
+│   │   │   │   │   └── guards.ts
+│   │   │   │   └── dto/
+│   │   │   ├── 📂 stores/
+│   │   │   ├── 📂 customers/
+│   │   │   ├── 📂 disputes/
+│   │   │   ├── 📂 billing/
+│   │   │   ├── 📂 shipping/
+│   │   │   ├── 📂 notifications/
+│   │   │   └── 📂 audit-logs/
+│   │   ├── 📂 common/
+│   │   │   ├── 📂 decorators/
+│   │   │   ├── 📂 filters/
+│   │   │   ├── 📂 interceptors/
+│   │   │   ├── 📂 pipes/
+│   │   │   └── 📂 utils/
+│   │   ├── 📂 config/
+│   │   ├── 📂 database/
+│   │   │   └── 📂 prisma/
+│   │   │       ├── schema.prisma
+│   │   │       └── migrations/
+│   │   ├── 📂 jobs/
+│   │   │   ├── cron.service.ts
+│   │   │   └── queue.processor.ts
+│   │   ├── 📂 integrations/
+│   │   │   ├── stripe/
+│   │   │   ├── whatsapp/
+│   │   │   └── email/
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── 📂 test/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env.example
+│
+├── 📂 frontend/
+│   ├── 📂 src/
+│   │   ├── 📂 app/
+│   │   ├── 📂 components/
+│   │   ├── 📂 features/
+│   │   ├── 📂 hooks/
+│   │   ├── 📂 services/
+│   │   ├── 📂 store/
+│   │   ├── 📂 styles/
+│   │   └── 📂 utils/
+│   ├── package.json
+│   └── next.config.js
+│
+├── 📂 docs/
+│   ├── api/
+│   ├── architecture/
+│   └── deployment/
+│
+├── 📂 docker/
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+│
+├── .gitignore
+├── README.md
+└── LICENSE
+```
+
+---
+
+## 🗃️ قاعدة البيانات
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    User ||--o{ Order : places
+    User ||--o{ Review : writes
+    User ||--o{ Dispute : opens
+    
+    Store ||--o{ Product : sells
+    Store ||--o{ Order : fulfills
+    Store ||--o{ StoreDocument : has
+    Store ||--o{ Violation : receives
+    
+    Order ||--|{ OrderItem : contains
+    Order ||--o{ Payment : has
+    Order ||--o{ Shipment : shipped_via
+    Order ||--o{ AuditLog : logged
+    Order ||--o| Dispute : may_have
+    Order ||--o| Return : may_have
+    
+    Dispute ||--o{ DisputeEvidence : has
+    
+    Invoice ||--o{ InvoiceItem : contains
+    Invoice }o--|| Order : for
+    
+    Notification ||--o{ NotificationRecipient : sent_to
+```
+
+### Prisma Schema (Simplified)
+
+```prisma
+// schema.prisma
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String?
+  passwordHash  String
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  orders        Order[]
+  reviews       Review[]
+  disputes      Dispute[]
+}
+
+model Store {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  ownerId       String
+  status        StoreStatus
+  balance       Decimal   @default(0)
+  rating        Float     @default(0)
+  licenseExpiry DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  owner         User      @relation(fields: [ownerId], references: [id])
+  products      Product[]
+  orders        Order[]
+  documents     StoreDocument[]
+  violations    Violation[]
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  orderNumber   String    @unique
+  customerId    String
+  storeId       String?
+  status        OrderStatus
+  totalAmount   Decimal
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  customer      User      @relation(fields: [customerId], references: [id])
+  store         Store?    @relation(fields: [storeId], references: [id])
+  items         OrderItem[]
+  payments      Payment[]
+  shipments     Shipment[]
+  auditLogs     AuditLog[]
+  dispute       Dispute?
+  return        Return?
+}
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  orderId       String
+  previousState String
+  newState      String
+  actorType     ActorType
+  actorId       String?
+  reason        String
+  timestamp     DateTime  @default(now())
+  metadata      Json?
+  
+  order         Order     @relation(fields: [orderId], references: [id])
+  
+  @@index([orderId])
+  @@index([timestamp])
+}
+
+enum OrderStatus {
+  AWAITING_OFFERS
+  AWAITING_PAYMENT
+  PREPARATION
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  RETURNED
+  DISPUTED
+}
+
+enum ActorType {
+  SYSTEM
+  ADMIN
+  CUSTOMER
+  STORE
+}
+```
+
+---
+
+## 📖 API Documentation
+
+### Authentication Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/analytics/dashboard` | KPIs (orders, revenue, alerts) |
-| `GET` | `/api/analytics/sales-chart` | 30-day sales data |
-| `GET` | `/api/analytics/status-distribution` | Pie chart data |
-| `GET` | `/api/analytics/top-customers` | Top 5 customers |
+| POST | `/auth/login` | تسجيل الدخول |
+| POST | `/auth/register` | إنشاء حساب جديد |
+| POST | `/auth/refresh` | تحديث الـ Token |
+| POST | `/auth/logout` | تسجيل الخروج |
 
-### Other APIs
+### Orders Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/audit-logs` | All status changes |
-| `GET` | `/api/audit-logs/order/:id` | Order timeline |
-| `GET` | `/api/audit-logs/export` | CSV download |
-| `GET` | `/api/notifications` | System alerts |
-| `PATCH` | `/api/notifications/read-all` | Mark all read |
-| `GET` | `/api/email-templates` | Template list |
-| `POST` | `/api/email-templates/:id/preview` | HTML preview |
+| GET | `/orders` | جلب قائمة الطلبات |
+| GET | `/orders/:id` | جلب تفاصيل طلب |
+| POST | `/orders` | إنشاء طلب جديد |
+| PATCH | `/orders/:id/transition` | تغيير حالة الطلب (عبر FSM) |
+| GET | `/orders/:id/timeline` | جلب تاريخ الطلب |
+
+### Example: Transition Order Status
+
+```http
+PATCH /orders/123e4567-e89b-12d3-a456-426614174000/transition
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "newStatus": "shipped",
+  "reason": "Order has been shipped via Aramex"
+}
+```
 
 ---
 
-## ✨ New Features (v2.0)
+## 🚀 التشغيل والنشر
 
-### 1. Dashboard Charts
-- **Sales Line Chart**: 30-day revenue trend (Canvas-based)
-- **Status Pie Chart**: Order distribution (SVG donut)
-- **Top Customers Table**: Ranked by spending
+### متطلبات البيئة
 
-### 2. Real-time WebSocket
-- Instant notifications without refresh
-- Desktop notifications support
-- Auto-reconnect (5 attempts)
-- Sound alerts
+```bash
+Node.js >= 18.x
+PostgreSQL >= 14
+Redis >= 6
+```
 
-### 3. Advanced Search
-- Search by order number, customer name/email
-- Filter by status, date range, amount range
-- CSV export functionality
+### التثبيت والتشغيل
 
-### 4. Order Timeline
-- Visual step-by-step order history
-- Shows who made each change (System/Admin/Customer)
-- Timestamps for each transition
+```bash
+# Clone the repository
+git clone https://github.com/your-org/marketplace-admin-system.git
+cd marketplace-admin-system
 
-### 5. Email Templates
-- Preview HTML templates
-- Variables substitution
-- Templates: Order Confirmation, Shipping, Payment Reminder
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
 
-### 6. Professional Icons
-- Replaced emojis with Lucide React SVG icons
-- Consistent, scalable, customizable
+# Setup environment
+cp backend/.env.example backend/.env
+# Edit .env with your credentials
+
+# Run database migrations
+cd backend
+npx prisma migrate dev
+
+# Start development servers
+npm run dev         # Backend on port 3000
+npm run dev:frontend # Frontend on port 3001
+```
+
+### Docker Deployment
+
+```bash
+docker-compose up -d
+```
 
 ---
 
-## 👤 Author
+## 📜 معلومات العقد
 
-**Mohamed Essam**
+| البند | التفاصيل |
+|-------|----------|
+| **مدة التنفيذ** | 10-12 أسبوع |
+| **الضمان** | 60 يوم بعد التسليم |
+| **السرية** | NDA سارية حتى بعد انتهاء العقد |
+| **الملكية الفكرية** | جميع الأكواد ملك للطرف الأول |
 
 ---
 
-## 📄 License
+## 📞 التواصل
 
-MIT License - Free for commercial and personal use.
+**م. محمد عصام** - Senior Software Engineer
+
+---
+
+<div align="center">
+
+**🔒 Proprietary & Confidential**
+
+*هذا المشروع محمي بموجب اتفاقية السرية (NDA)*
+
+</div>
