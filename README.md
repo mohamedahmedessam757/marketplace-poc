@@ -813,47 +813,180 @@ async function bootstrap() {
 
 ---
 
-## 📅 مراحل التنفيذ
+## 📅 مراحل التنفيذ (Vertical Slicing)
 
-### Milestone 1: Core Architecture + FSM (25%)
+> [!TIP]
+> **استراتيجية التطوير**: نقوم بتطوير **Backend + Frontend معاً** في كل مرحلة، مما يضمن نظام عامل ومرئي من البداية.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Vertical Slicing Approach                     │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐            │
+│  │   M1    │  │   M2    │  │   M3    │  │   M4    │            │
+│  │ ─────── │  │ ─────── │  │ ─────── │  │ ─────── │            │
+│  │ Backend │  │ Backend │  │ Backend │  │ Backend │            │
+│  │    +    │  │    +    │  │    +    │  │    +    │            │
+│  │Frontend │  │Frontend │  │Frontend │  │Frontend │            │
+│  │ ─────── │  │ ─────── │  │ ─────── │  │ ─────── │            │
+│  │ Working │  │ Working │  │ Working │  │ Working │            │
+│  │ Feature │  │ Feature │  │ Feature │  │ Feature │            │
+│  └─────────┘  └─────────┘  └─────────┘  └─────────┘            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 🏗️ M1: Core + Auth + Orders FSM (25%)
 **المدة: 2-3 أسابيع**
 
-- [ ] إعداد بيئة التطوير
-- [ ] تصميم قاعدة البيانات
-- [ ] بناء نظام Authentication
-- [ ] تنفيذ Order State Machine
-- [ ] بناء Guard & Enforcement
-- [ ] إنشاء جداول Audit Logs
+#### Backend
+- [ ] إعداد NestJS + Prisma + PostgreSQL
+- [ ] تصميم Database Schema
+- [ ] Auth Module (Login/Register + JWT)
+- [ ] Order FSM Service + Guards
+- [ ] Audit Logs System
+- [ ] Basic CRUD APIs
 
-### Milestone 2: Automation + Audit Logs (25%)
+#### Frontend
+- [ ] إعداد Next.js + Tailwind CSS
+- [ ] Layout + RTL + Dark Theme
+- [ ] Login Page + Auth Context
+- [ ] Orders List Page
+- [ ] Order Details + Timeline
+- [ ] Status Change UI
+
+#### 🎬 Demo للعميل
+```
+✓ تسجيل دخول حقيقي
+✓ إنشاء طلب وتغيير حالته
+✓ محاولة تغيير غلط (تفشل)
+✓ Audit Log يظهر كل التغييرات
+```
+
+---
+
+### ⚙️ M2: Automation + Stores + Customers (25%)
 **المدة: 2-3 أسابيع**
 
-- [ ] بناء نظام Cron Jobs
-- [ ] إعداد Redis + BullMQ
-- [ ] تنفيذ قواعد SLA
-- [ ] نظام التنبيهات
-- [ ] التصعيد التلقائي
-- [ ] اختبار Audit Logs
+#### Backend
+- [ ] Cron Jobs Service
+- [ ] Redis + BullMQ Queue
+- [ ] Notifications Service
+- [ ] Stores Module (CRUD + KPIs)
+- [ ] Customers Module
+- [ ] SLA Rules Engine
 
-### Milestone 3: APIs + Stripe + Security (25%)
+#### Frontend
+- [ ] Dashboard Page + KPIs + Charts
+- [ ] Alerts Section
+- [ ] Stores List + Profile Page
+- [ ] Customers List + Profile Page
+- [ ] Settings Page (Basic)
+
+#### 🎬 Demo للعميل
+```
+✓ Dashboard بالـ KPIs والرسوم البيانية
+✓ إنشاء متجر وعميل
+✓ تنبيه تلقائي يظهر
+✓ إلغاء طلب تلقائي بعد 24 ساعة
+```
+
+---
+
+### 💳 M3: Stripe + Disputes + Billing (25%)
 **المدة: 2-3 أسابيع**
 
-- [ ] بناء REST APIs
-- [ ] تكامل Stripe Webhooks
-- [ ] إعداد WhatsApp
-- [ ] إعداد Email
-- [ ] تطبيق Security Layer
-- [ ] Rate Limiting
+#### Backend
+- [ ] Stripe Integration + Webhooks
+- [ ] Disputes Module (Lifecycle)
+- [ ] Billing Module (Invoices)
+- [ ] Shipping Module
+- [ ] WhatsApp + Email Integration
+- [ ] Advanced Security
 
-### Milestone 4: Testing + Documentation + Delivery (25%)
+#### Frontend
+- [ ] Payment UI + Status
+- [ ] Disputes Page + Evidence Upload
+- [ ] Invoices Page + QR View
+- [ ] Shipping Tracking
+- [ ] Notification Center
+
+#### 🎬 Demo للعميل
+```
+✓ دفع حقيقي بـ Stripe (Test Mode)
+✓ الطلب ينتقل لـ Preparation تلقائياً
+✓ فتح نزاع ورفع أدلة
+✓ إنشاء فاتورة بـ QR Code
+```
+
+---
+
+### 🧪 M4: Testing + Polish + Delivery (25%)
 **المدة: 2-3 أسابيع**
 
-- [ ] Unit Tests
+#### Backend
+- [ ] Unit Tests (80%+ Coverage)
 - [ ] Integration Tests
 - [ ] E2E Tests
-- [ ] API Documentation
-- [ ] System Documentation
-- [ ] Deployment
+- [ ] Security Audit
+- [ ] API Documentation (Swagger)
+- [ ] Performance Optimization
+
+#### Frontend
+- [ ] UI Polish + Animations
+- [ ] Responsive Design
+- [ ] Error Handling + Loading States
+- [ ] Final Testing
+- [ ] Build Optimization
+
+#### 🎬 Demo للعميل
+```
+✓ نظام كامل شغال ومختبر
+✓ Test Coverage Report
+✓ Swagger Documentation
+✓ فيديو شرح كامل للنظام
+```
+
+---
+
+### 📊 ملخص المراحل
+
+| المرحلة | Backend | Frontend | الناتج |
+|---------|---------|----------|--------|
+| **M1** | Auth + FSM + Audit | Login + Orders | نظام طلبات أساسي |
+| **M2** | Automation + Modules | Dashboard + Lists | لوحة تحكم كاملة |
+| **M3** | Stripe + Disputes | Payments + Billing | تكاملات خارجية |
+| **M4** | Testing + Docs | Polish + Deploy | نظام جاهز للإنتاج |
+
+---
+
+### ⏰ Timeline
+
+```mermaid
+gantt
+    title Project Timeline (10-12 weeks)
+    dateFormat  YYYY-MM-DD
+    
+    section M1 - Core (25%)
+    Backend Setup & Auth      :a1, 2026-01-08, 7d
+    FSM + Audit Logs          :a2, after a1, 7d
+    Frontend Setup + Orders   :a3, 2026-01-08, 14d
+    
+    section M2 - Automation (25%)
+    Cron Jobs + Queue         :b1, after a2, 7d
+    Stores + Customers        :b2, after b1, 7d
+    Dashboard + Lists UI      :b3, after a3, 14d
+    
+    section M3 - Stripe (25%)
+    Stripe + Disputes         :c1, after b2, 10d
+    Billing + Shipping        :c2, after c1, 4d
+    Payments + Billing UI     :c3, after b3, 14d
+    
+    section M4 - Testing (25%)
+    Tests + Security          :d1, after c2, 10d
+    Polish + Documentation    :d2, after d1, 4d
+    Final Delivery            :d3, after d2, 2d
+```
 
 ---
 
