@@ -1055,6 +1055,24 @@ async function bootstrap() {
 | Order Details | تفاصيل طلب + Timeline | [ ] |
 | Audit Logs | سجل العمليات | [ ] |
 
+
+**
+
+#### Backend
+- [ ] إعداد NestJS + Prisma + PostgreSQL
+- [ ] تصميم Database Schema
+- [ ] Auth Module (Login/Register + JWT)
+- [ ] Order FSM Service + Guards
+- [ ] Audit Logs System
+- [ ] Basic CRUD APIs
+
+#### Frontend
+- [ ] إعداد Next.js + Tailwind CSS
+- [ ] Layout + RTL + Dark Theme
+- [ ] Login Page + Auth Context
+- [ ] Orders List Page
+- [ ] Order Details + Timeline
+- [ ] Status Change UI
 ### الميزات
 | الميزة | الوصف | إلزامي |
 |--------|-------|--------|
@@ -1063,7 +1081,6 @@ async function bootstrap() {
 | FSM Guard | منع التغيير المباشر | ✅ |
 | Audit Logs | تسجيل كل عملية | ✅ |
 | Status Transition | تغيير الحالة | ✅ |
-
 ### المتطلبات الإلزامية من العميل
 - [ ] تحديد Roles المطلوبة (Admin types)
 - [ ] تأكيد حالات الطلب النهائية
@@ -1110,6 +1127,27 @@ async function bootstrap() {
 | Notifications | التنبيهات | [ ] |
 | Settings | الإعدادات الأساسية | [ ] |
 
+
+#### Backend
+- [ ] Cron Jobs Service
+- [ ] Redis + BullMQ Queue
+- [ ] Notifications Service
+- [ ] Stores Module (CRUD + KPIs)
+- [ ] Customers Module
+- [ ] SLA Rules Engine
+
+#### Frontend
+- [ ] Dashboard Page + KPIs + Charts
+- [ ] Alerts Section
+- [ ] Stores List + Profile Page
+- [ ] Customers List + Profile Page
+- [ ] Settings Page (Basic)
+
+
+
+
+
+
 ### الميزات
 | الميزة | الوصف | إلزامي |
 |--------|-------|--------|
@@ -1153,6 +1191,25 @@ async function bootstrap() {
 | Invoice View | عرض فاتورة + QR | [ ] |
 | Shipping | تتبع الشحن | [ ] |
 
+
+#### Backend
+- [ ] Stripe Integration + Webhooks
+- [ ] Disputes Module (Lifecycle)
+- [ ] Billing Module (Invoices)
+- [ ] Shipping Module
+- [ ] WhatsApp + Email Integration
+- [ ] Advanced Security
+
+#### Frontend
+- [ ] Payment UI + Status
+- [ ] Disputes Page + Evidence Upload
+- [ ] Invoices Page + QR View
+- [ ] Shipping Tracking
+- [ ] Notification Center
+
+
+
+
 ### الميزات
 | الميزة | الوصف | إلزامي |
 |--------|-------|--------|
@@ -1195,6 +1252,23 @@ async function bootstrap() {
 | E2E Tests | السيناريوهات الكاملة | [ ] |
 | Security Audit | OWASP Top 10 | [ ] |
 
+
+#### Backend
+- [ ] Unit Tests (80%+ Coverage)
+- [ ] Integration Tests
+- [ ] E2E Tests
+- [ ] Security Audit
+- [ ] API Documentation (Swagger)
+- [ ] Performance Optimization
+
+#### Frontend
+- [ ] UI Polish + Animations
+- [ ] Responsive Design
+- [ ] Error Handling + Loading States
+- [ ] Final Testing
+- [ ] Build Optimization
+
+
 ### التسليمات
 | التسليم | الوصف | الحالة |
 |---------|-------|--------|
@@ -1205,6 +1279,337 @@ async function bootstrap() {
 | Deployment | نشر على السيرفر | [ ] |
 
 ---
+---
+
+### 📊 ملخص المراحل
+
+| المرحلة | Backend | Frontend | الناتج |
+|---------|---------|----------|--------|
+| **M1** | Auth + FSM + Audit | Login + Orders | نظام طلبات أساسي |
+| **M2** | Automation + Modules | Dashboard + Lists | لوحة تحكم كاملة |
+| **M3** | Stripe + Disputes | Payments + Billing | تكاملات خارجية |
+| **M4** | Testing + Docs | Polish + Deploy | نظام جاهز للإنتاج |
+
+---
+
+### ⏰ Timeline
+
+```mermaid
+gantt
+    title Project Timeline (10-12 weeks)
+    dateFormat  YYYY-MM-DD
+    
+    section M1 - Core (25%)
+    Backend Setup & Auth      :a1, 2026-01-08, 7d
+    FSM + Audit Logs          :a2, after a1, 7d
+    Frontend Setup + Orders   :a3, 2026-01-08, 14d
+    
+    section M2 - Automation (25%)
+    Cron Jobs + Queue         :b1, after a2, 7d
+    Stores + Customers        :b2, after b1, 7d
+    Dashboard + Lists UI      :b3, after a3, 14d
+    
+    section M3 - Stripe (25%)
+    Stripe + Disputes         :c1, after b2, 10d
+    Billing + Shipping        :c2, after c1, 4d
+    Payments + Billing UI     :c3, after b3, 14d
+    
+    section M4 - Testing (25%)
+    Tests + Security          :d1, after c2, 10d
+    Polish + Documentation    :d2, after d1, 4d
+    Final Delivery            :d3, after d2, 2d
+```
+
+---
+
+## 📁 هيكل المشروع
+
+```
+marketplace-admin-system/
+├── 📂 backend/
+│   ├── 📂 src/
+│   │   ├── 📂 modules/
+│   │   │   ├── 📂 auth/
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── strategies/
+│   │   │   │   └── guards/
+│   │   │   ├── 📂 orders/
+│   │   │   │   ├── orders.controller.ts
+│   │   │   │   ├── orders.service.ts
+│   │   │   │   ├── orders.module.ts
+│   │   │   │   ├── fsm/
+│   │   │   │   │   ├── order-state-machine.ts
+│   │   │   │   │   ├── transitions.ts
+│   │   │   │   │   └── guards.ts
+│   │   │   │   └── dto/
+│   │   │   ├── 📂 stores/
+│   │   │   ├── 📂 customers/
+│   │   │   ├── 📂 disputes/
+│   │   │   ├── 📂 billing/
+│   │   │   ├── 📂 shipping/
+│   │   │   ├── 📂 notifications/
+│   │   │   └── 📂 audit-logs/
+│   │   ├── 📂 common/
+│   │   │   ├── 📂 decorators/
+│   │   │   ├── 📂 filters/
+│   │   │   ├── 📂 interceptors/
+│   │   │   ├── 📂 pipes/
+│   │   │   └── 📂 utils/
+│   │   ├── 📂 config/
+│   │   ├── 📂 database/
+│   │   │   └── 📂 prisma/
+│   │   │       ├── schema.prisma
+│   │   │       └── migrations/
+│   │   ├── 📂 jobs/
+│   │   │   ├── cron.service.ts
+│   │   │   └── queue.processor.ts
+│   │   ├── 📂 integrations/
+│   │   │   ├── stripe/
+│   │   │   ├── whatsapp/
+│   │   │   └── email/
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── 📂 test/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env.example
+│
+├── 📂 frontend/
+│   ├── 📂 src/
+│   │   ├── 📂 app/
+│   │   ├── 📂 components/
+│   │   ├── 📂 features/
+│   │   ├── 📂 hooks/
+│   │   ├── 📂 services/
+│   │   ├── 📂 store/
+│   │   ├── 📂 styles/
+│   │   └── 📂 utils/
+│   ├── package.json
+│   └── next.config.js
+│
+├── 📂 docs/
+│   ├── api/
+│   ├── architecture/
+│   └── deployment/
+│
+├── 📂 docker/
+│   ├── Dockerfile.backend
+│   ├── Dockerfile.frontend
+│   └── docker-compose.yml
+│
+├── .gitignore
+├── README.md
+└── LICENSE
+```
+
+---
+
+## 🗃️ قاعدة البيانات
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    User ||--o{ Order : places
+    User ||--o{ Review : writes
+    User ||--o{ Dispute : opens
+    
+    Store ||--o{ Product : sells
+    Store ||--o{ Order : fulfills
+    Store ||--o{ StoreDocument : has
+    Store ||--o{ Violation : receives
+    
+    Order ||--|{ OrderItem : contains
+    Order ||--o{ Payment : has
+    Order ||--o{ Shipment : shipped_via
+    Order ||--o{ AuditLog : logged
+    Order ||--o| Dispute : may_have
+    Order ||--o| Return : may_have
+    
+    Dispute ||--o{ DisputeEvidence : has
+    
+    Invoice ||--o{ InvoiceItem : contains
+    Invoice }o--|| Order : for
+    
+    Notification ||--o{ NotificationRecipient : sent_to
+```
+
+### Prisma Schema (Simplified)
+
+```prisma
+// schema.prisma
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String?
+  passwordHash  String
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  orders        Order[]
+  reviews       Review[]
+  disputes      Dispute[]
+}
+
+model Store {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  ownerId       String
+  status        StoreStatus
+  balance       Decimal   @default(0)
+  rating        Float     @default(0)
+  licenseExpiry DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  owner         User      @relation(fields: [ownerId], references: [id])
+  products      Product[]
+  orders        Order[]
+  documents     StoreDocument[]
+  violations    Violation[]
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  orderNumber   String    @unique
+  customerId    String
+  storeId       String?
+  status        OrderStatus
+  totalAmount   Decimal
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  customer      User      @relation(fields: [customerId], references: [id])
+  store         Store?    @relation(fields: [storeId], references: [id])
+  items         OrderItem[]
+  payments      Payment[]
+  shipments     Shipment[]
+  auditLogs     AuditLog[]
+  dispute       Dispute?
+  return        Return?
+}
+
+model AuditLog {
+  id            String    @id @default(uuid())
+  orderId       String
+  previousState String
+  newState      String
+  actorType     ActorType
+  actorId       String?
+  reason        String
+  timestamp     DateTime  @default(now())
+  metadata      Json?
+  
+  order         Order     @relation(fields: [orderId], references: [id])
+  
+  @@index([orderId])
+  @@index([timestamp])
+}
+
+enum OrderStatus {
+  AWAITING_OFFERS
+  AWAITING_PAYMENT
+  PREPARATION
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  RETURNED
+  DISPUTED
+}
+
+enum ActorType {
+  SYSTEM
+  ADMIN
+  CUSTOMER
+  STORE
+}
+```
+
+---
+
+## 📖 API Documentation
+
+### Authentication Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/login` | تسجيل الدخول |
+| POST | `/auth/register` | إنشاء حساب جديد |
+| POST | `/auth/refresh` | تحديث الـ Token |
+| POST | `/auth/logout` | تسجيل الخروج |
+
+### Orders Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/orders` | جلب قائمة الطلبات |
+| GET | `/orders/:id` | جلب تفاصيل طلب |
+| POST | `/orders` | إنشاء طلب جديد |
+| PATCH | `/orders/:id/transition` | تغيير حالة الطلب (عبر FSM) |
+| GET | `/orders/:id/timeline` | جلب تاريخ الطلب |
+
+### Example: Transition Order Status
+
+```http
+PATCH /orders/123e4567-e89b-12d3-a456-426614174000/transition
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "newStatus": "shipped",
+  "reason": "Order has been shipped via Aramex"
+}
+```
+
+---
+
+## 🚀 التشغيل والنشر
+
+### متطلبات البيئة
+
+```bash
+Node.js >= 18.x
+PostgreSQL >= 14
+Redis >= 6
+```
+
+### التثبيت والتشغيل
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/marketplace-admin-system.git
+cd marketplace-admin-system
+
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
+
+# Setup environment
+cp backend/.env.example backend/.env
+# Edit .env with your credentials
+
+# Run database migrations
+cd backend
+npx prisma migrate dev
+
+# Start development servers
+npm run dev         # Backend on port 3000
+npm run dev:frontend # Frontend on port 3001
+```
+
+### Docker Deployment
+
+```bash
+docker-compose up -d
+```
+
+
 
 # 📜 العقد الكامل
 
@@ -1214,7 +1619,9 @@ async function bootstrap() {
 | الطرف الأول (صاحب المشروع) | عبدالكريم الخريف |
 | الطرف الثاني (المطور) | م. محمد عصام |
 | مدة التنفيذ | 10-12 أسبوع |
-
+| **الضمان** | 60 يوم بعد التسليم |
+| **السرية** | NDA سارية حتى بعد انتهاء العقد |
+| **الملكية الفكرية** | جميع الأكواد ملك للطرف الأول 
 ---
 
 ## ثانياً: نطاق المشروع
@@ -1330,6 +1737,23 @@ async function bootstrap() {
 **📧 في انتظار إجابات العميل على الأسئلة أعلاه**
 
 </div>
+
+---
+
+## 📞 التواصل
+
+**م. محمد عصام** - Senior Software Engineer
+
+---
+
+<div align="center">
+
+**🔒 Proprietary & Confidential**
+
+*هذا المشروع محمي بموجب اتفاقية السرية (NDA)*
+
+</div>
+
 
 
 
